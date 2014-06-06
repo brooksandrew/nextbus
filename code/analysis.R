@@ -18,6 +18,13 @@ dfc <- cleanBusData(df, minpredcount=10)
 plot(dfc$Minutes, col=dfc$VehicleID, pch=ifelse(dfc$arrival==1 | dfc$departure==1, 19,3))
 plot(dfc$Minutes, col=dfc$tripID, pch=ifelse(dfc$arrival==1 | dfc$departure==1, 19,3))
 
-validatePred <- function(predtime, actualtime){
-  actualtime-predtime
-}
+## assessing errors
+errdf <- validatePred(dfc, min=10)
+mean(errdf[,1], na.rm=T)
+mean(errdf[,2], na.rm=T)
+mean(errdf[,3], na.rm=T)
+
+
+
+  
+  

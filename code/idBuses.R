@@ -1,6 +1,7 @@
 ###################################################
+## idBuses ########################################
 ## This script finds unique buses.
-  ##################################################
+##################################################
 idBuses <- function(df, busvar='VehicleID', timevar='time', predvar='Minutes', wordy=F) {
 
   ### Find bus departures and arrivals
@@ -48,6 +49,7 @@ if(1==0){
 
 
 ##########################################################################
+## cleanBusData ##########################################################
 ## This function cleans the bus data created with the idBuses function
 ## above.  It deletes trips with less than 10 (or x) predictions.
 ##########################################################################
@@ -70,6 +72,29 @@ if(1==0) {
   dfd <- cleanBusData(dfd)
 }
 
-    
+##########################################################################
+## validatePred ##########################################################
+##This script validates the predictions of nextbus.  It returns how late or early
+## each bus is at a particular time away on average.  For example, when nextbus says
+## 5 mins how late is nextbus on average
+##########################################################################
+
+validatePred <- function(df, min=5, id='tripID', arrival='arrival', predtime='predtime', pred='Minutes', time='time') {
+  errorBegin <- c()
+  errorEnd <- c()
+  errorAvg <- c()
+  for(i in unique(df[df[,pred]==min,id])){
+    err <- (df[df[,arrival]==1 & df[,id]==i, time] - df[df[,pred]==min & df[,id]==i, predtime])/60
+    errorBegin <- c(errorBegin, err[1])
+    errorEnd <- c(errorEnd, err[length(err)])
+    errorAvg <- c(errorAvg, mean(err, na.rm=T))
+    #print(paste(length(errorBegin),length(errorEnd),length(errorAvg)))
+  }
+  
+  errordf <- data.frame(errorBegin=errorEnd, errorBegin=errorBegin, errorAvg=errorAvg)
+  
+  return(errordf)
+  
+}
 
 
