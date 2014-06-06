@@ -29,6 +29,8 @@ idBuses <- function(df, busvar='VehicleID', timevar='time', predvar='Minutes', w
   return(df)
 }
 
+
+## Example
 if(1==0){
   setwd('C:/Users/ANDREW/Documents/github/nextbus/data/')
   a <- read.delim('bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
