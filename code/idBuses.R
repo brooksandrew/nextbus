@@ -5,16 +5,16 @@ idBuses <- function(df, busvar='VehicleID', timevar='time', predvar='Minutes', w
 
   ### Find bus departures and arrivals
   df <- df[order(df[,busvar], df[,timevar]), ]
-  dfd$difftime[2:nrow(df)] <- difftime(df[2:nrow(df), timevar], df[1:(nrow(df)-1), timevar], units='secs')
+  df$difftime[2:nrow(df)] <- difftime(df[2:nrow(df), timevar], df[1:(nrow(df)-1), timevar], units='secs')
   df$diffminutes[2:nrow(df)] <- (df[2:nrow(df), predvar] - df[1:(nrow(df)-1),predvar])
   df$predtime <- df[,timevar] + df[,predvar]*60
   df$diffpredtime <- c(difftime(df$predtime[2:nrow(df)], df$predtime[1:(nrow(df)-1)])/60, NA)
   df[,paste(busvar, '.f1', sep='')] <- c(df[2:nrow(df), busvar], NA)
-  df$arrival <- ifelse(df[,predvar]==0 & (df$diffpredtime>15 | df$VehicleID.f1!=df$VehicleID), 1, 0)
+  df$arrival <- ifelse(df[,predvar]==0 & (df$diffpredtime>15 | df[,paste(busvar, '.f1', sep='')]!=df[,busvar]), 1, 0)
   df$departure <- c(0, df$arrival[1:(nrow(df)-1)])
   
   ## id buses
-  df$busID <- cut(1:nrow(df), breaks=which(df$arrival==1), include.lowest=T, right=T)
+  df$tripID <- as.numeric(factor(cut(1:nrow(df), breaks=c(1, which(df$arrival==1),nrow(df)), include.lowest=T, right=T)))
   
   ## reminder of what variables mean
   if(wordy==T){
@@ -41,20 +41,35 @@ if(1==0){
   dfd <- idBuses(a, wordy=T)
   
   plot(dfd$predtime, col=dfd$VehicleID)
-  plot(dfd$predtime, col=dfd$busID)
+  plot(dfd$predtime, col=dfd$tripID)
   plot(dfd$Minutes, col=dfd$VehicleID, pch=ifelse(dfd$arrival==1 | dfd$departure==1, 19,3))
   plot(dfd$Minutes, col=dfd$VehicleID, pch=ifelse(dfd$arrival==1 | dfd$departure==1, 19,3)) #col=ifelse(dfd$arrival==1, 2,1)
 }
 
+
+##########################################################################
+## This function cleans the bus data created with the idBuses function
+## above.  It deletes trips with less than 10 (or x) predictions.
+##########################################################################
+
+cleanBusData <- function(df, minpredcount=10) {
+  agg <- aggregate(time~tripID, df, 'length')
+  names(agg) <- c('tripID', 'predcount')
+  df <- merge(df, agg, by='tripID', all=T)
+  df <- df[df$predcount > minpredcount, ]
+  return(df)
+}
+
+## Example
+if(1==0) {
+  setwd('C:/Users/ANDREW/Documents/github/nextbus/data/')
+  a <- read.delim('bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
+  a$time <- as.POSIXct(a$time)
   
+  dfd <- idBuses(a, wordy=T)
+  dfd <- cleanBusData(dfd)
+}
+
     
-
-
-
-
-
-
-
-
 
 
