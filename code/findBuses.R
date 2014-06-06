@@ -1,7 +1,10 @@
 ###################################################
 ## This script finds unique buses.
 ##################################################
-a <- read.delim('C:/Users/ANDREW/Dropbox/wmata/bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
+
+setwd('C:/Users/ANDREW/Documents/github/nextbus/data/')
+
+a <- read.delim('bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
 a$time <- as.POSIXct(a$time)
 
 df <- a
