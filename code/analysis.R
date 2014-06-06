@@ -11,3 +11,8 @@ plot(df$Minutes, col=df$VehicleID, pch=ifelse(df$arrival==1 | df$departure==1, 1
 plot(df$Minutes, col=df$busID, pch=ifelse(df$arrival==1 | df$departure==1, 19,3))
 
 
+
+
+cleanBusData <- function(df, busvar='VehicleID', timevar='time', predvar='Minutes') {
+  
+}

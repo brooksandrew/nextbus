@@ -1,54 +1,38 @@
 ###################################################
 ## This script finds unique buses.
-##################################################
+  ##################################################
 idBuses <- function(df, busvar='VehicleID', timevar='time', predvar='Minutes', wordy=F) {
-<<<<<<< HEAD
-  
-  ### Find bus departures and arrivals
-  df <- df[order(df[,busvar], df[,timevar]), ]
-  df$difftime[2:nrow(df)] <- difftime(df[2:nrow(df), timevar], df[1:(nrow(df)-1), timevar], units='secs')
-=======
 
   ### Find bus departures and arrivals
   df <- df[order(df[,busvar], df[,timevar]), ]
   dfd$difftime[2:nrow(df)] <- difftime(df[2:nrow(df), timevar], df[1:(nrow(df)-1), timevar], units='secs')
->>>>>>> 15ddcfca6c23d7a9945147d7cc67e1d5872cd75d
   df$diffminutes[2:nrow(df)] <- (df[2:nrow(df), predvar] - df[1:(nrow(df)-1),predvar])
   df$predtime <- df[,timevar] + df[,predvar]*60
   df$diffpredtime <- c(difftime(df$predtime[2:nrow(df)], df$predtime[1:(nrow(df)-1)])/60, NA)
   df[,paste(busvar, '.f1', sep='')] <- c(df[2:nrow(df), busvar], NA)
-<<<<<<< HEAD
-  df$arrival <- ifelse(df[,predvar]==0 & (df$diffpredtime>15 | df[,paste(busvar, '.f1', sep='')]!=df[,busvar]), 1, 0)
-  df$departure <- c(0, df$arrival[1:(nrow(df)-1)])
-  
-  ## id buses
-  df$busID <- cut(1:nrow(df), breaks=which(df$arrival==1), include.lowest=F, right=T)
-=======
   df$arrival <- ifelse(df[,predvar]==0 & (df$diffpredtime>15 | df$VehicleID.f1!=df$VehicleID), 1, 0)
   df$departure <- c(0, df$arrival[1:(nrow(df)-1)])
   
   ## id buses
   df$busID <- cut(1:nrow(df), breaks=which(df$arrival==1), include.lowest=T, right=T)
->>>>>>> 15ddcfca6c23d7a9945147d7cc67e1d5872cd75d
   
-  ## remdinder of what variables mean
+  ## reminder of what variables mean
   if(wordy==T){
-    print('difftime:        simply the change in prediction (# of minutes from one vintage to the next)')
-    print('predtime:        is the estimated arrival time of the bus from the current prediction')
-    print('diffpredtime:    change (in minutes) in estimated arrival time of bus from (t+1) to t')
-    print(paste(busvar, '.f1', ':    VehicleID of the bus one row ahead', sep=''))
-    print('arrival:         1 if bus is arriving in this period, 0 otherwise')
-    print('departure:       1 if bus is departing station in this period, 0 otherwise')
-  }
+     print('difftime:        simply the change in prediction (# of minutes from one vintage to the next)')
+     print('predtime:        is the estimated arrival time of the bus from the current prediction')
+     print('diffpredtime:    change (in minutes) in estimated arrival time of bus from (t+1) to t')
+     print(paste(busvar, '.f1', ':    VehicleID of the bus one row ahead.', sep=''))
+     print('arrival:      1 if bus is arriving in this period, 0 otherwise')
+     print('departure:    1 if bus is departing station in this period, 0 otherwise')
+   }
   
   return(df)
 }
 
-<<<<<<< HEAD
-=======
+
 
 ## Example
->>>>>>> 15ddcfca6c23d7a9945147d7cc67e1d5872cd75d
+
 if(1==0){
   setwd('C:/Users/ANDREW/Documents/github/nextbus/data/')
   a <- read.delim('bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
@@ -58,15 +42,12 @@ if(1==0){
   
   plot(dfd$predtime, col=dfd$VehicleID)
   plot(dfd$predtime, col=dfd$busID)
-<<<<<<< HEAD
   plot(dfd$Minutes, col=dfd$VehicleID, pch=ifelse(dfd$arrival==1 | dfd$departure==1, 19,3))
-  
-}
-=======
   plot(dfd$Minutes, col=dfd$VehicleID, pch=ifelse(dfd$arrival==1 | dfd$departure==1, 19,3)) #col=ifelse(dfd$arrival==1, 2,1)
-    
 }
 
+  
+    
 
 
 
@@ -75,4 +56,5 @@ if(1==0){
 
 
 
->>>>>>> 15ddcfca6c23d7a9945147d7cc67e1d5872cd75d
+
+
