@@ -1,74 +1,52 @@
 ###################################################
 ## This script finds unique buses.
 ##################################################
+idBuses <- function(df, busvar='VehicleID', timevar='time', predvar='Minutes', wordy=F) {
 
-setwd('C:/Users/ANDREW/Documents/github/nextbus/data/')
-
-a <- read.delim('bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
-a$time <- as.POSIXct(a$time)
-
-df <- a
-busvar <- 'VehicleID'
-timevar <- 'time'
-predvar <- 'Minutes'
-
-findArrivingBuses <- function(df, busvar, timevar, predvar) {
-  ids <- unique(df[,busvar])
+  ### Find bus departures and arrivals
+  df <- df[order(df[,busvar], df[,timevar]), ]
+  dfd$difftime[2:nrow(df)] <- difftime(df[2:nrow(df), timevar], df[1:(nrow(df)-1), timevar], units='secs')
+  df$diffminutes[2:nrow(df)] <- (df[2:nrow(df), predvar] - df[1:(nrow(df)-1),predvar])
+  df$predtime <- df[,timevar] + df[,predvar]*60
+  df$diffpredtime <- c(difftime(df$predtime[2:nrow(df)], df$predtime[1:(nrow(df)-1)])/60, NA)
+  df[,paste(busvar, '.f1', sep='')] <- c(df[2:nrow(df), busvar], NA)
+  df$arrival <- ifelse(df[,predvar]==0 & (df$diffpredtime>15 | df$VehicleID.f1!=df$VehicleID), 1, 0)
+  df$departure <- c(0, df$arrival[1:(nrow(df)-1)])
   
-  ##differencing predictions
-  for(i in ids){
-    rowids <- which(df[,busvar]==i)
-    df[rowids[2:length(rowids)], 'diffpred'] <- diff(df[rowids, predvar])
-    df[rowids[2:length(rowids)], 'difftime'] <- difftime(df[rowids[2:length(rowids)], timevar], df[rowids[1:length(rowids)-1], timevar])
+  ## id buses
+  df$busID <- cut(1:nrow(df), breaks=which(df$arrival==1), include.lowest=T, right=T)
+  
+  ## remdinder of what variables mean
+  if(wordy==T){
+    print('difftime:        simply the change in prediction (# of minutes from one vintage to the next)')
+    print('predtime:        is the estimated arrival time of the bus from the current prediction')
+    print('diffpredtime:    change (in minutes) in estimated arrival time of bus from (t+1) to t')
+    print(paste(busvar, '.f1', ':    VehicleID of the bus one row ahead', sep=''))
+    print('arrival:         1 if bus is arriving in this period, 0 otherwise')
+    print('departure:       1 if bus is departing station in this period, 0 otherwise')
   }
   
-  df$jumptime <- ifelse(abs(df$difftime)>60*1, 1, 0)
-  df$jumppred_a <- ifelse(abs(df$diffpred)>2, 1, 0)
-  
-  ##arrival times
-  df$arrival <- ifelse(df[,predvar]==0,1,0)
-  
-  arrivals <- data.frame(rows = which(df$arrival==1))
-  arrivals$Minutes <- df$Minutes[arrivals$rows]
-  arrivals$time <- df$time[arrivals$rows]
-  
-  arrivals$VehicleID <- df$VehicleID[arrivals$rows]
-  arrivals$difftime <- NA
-  arrivals$difftime[1:(nrow(arrivals)-1)] <- difftime(arrivals$time[2:nrow(arrivals)], arrivals$time[1:(nrow(arrivals)-1)], units='secs')
-  arrivals$VehicleID.l1 <- NA
-  arrivals$VehicleID.l1[2:nrow(arrivals)] <- arrivals$VehicleID[1:nrow(arrivals)-1]
-  arrivals$arrived <- ifelse(arrivals$difftime>60*3 & arrivals$VehicleID==arrivals$VehicleID.l1, 1, 0)
-  
-  df$arrivalFinal <- 0
-  df$arrivalFinal[arrivals$rows[arrivals$arrived==1]] <- 1 
-  
-  
-  ### Find departing buses
-  dfd <- a
-  dfd <- a[order(a$VehicleID, a$time), ]
-  dfd$difftime[2:nrow(dfd)] <- difftime(dfd$time[2:nrow(dfd)], dfd$time[1:(nrow(dfd)-1)], units='secs')
-  dfd$diffminutes[2:nrow(dfd)] <- (dfd$Minutes[2:nrow(dfd)] - dfd$Minutes[1:(nrow(dfd)-1)])
-  dfd$start <- ifelse(dfd$difftime>100 & dfd$diffminutes > 10, 1, 0)
-  dd <- dfd$time[2:nrow(dfd)] - dfd$Minutes[1:(nrow(dfd)-1)]
-  dfd$pred[2:nrow(dfd)] <- as.data.frame(as.POSIXct(dd))
+  return(df)
 }
-
 
 if(1==0){
-  df$arrivalF <- findBuses(df, 'VehicleID' , 'time', 'Minutes')
-  table(df$arrivalF)
+  setwd('C:/Users/ANDREW/Documents/github/nextbus/data/')
+  a <- read.delim('bus64_12mar2014_7am.txt', sep='|', header=T, stringsAsFactors=F)
+  a$time <- as.POSIXct(a$time)
+  
+  dfd <- idBuses(a, wordy=T)
+  
+  plot(dfd$predtime, col=dfd$VehicleID)
+  plot(dfd$predtime, col=dfd$busID)
+  plot(dfd$Minutes, col=dfd$VehicleID, pch=ifelse(dfd$arrival==1 | dfd$departure==1, 19,3)) #col=ifelse(dfd$arrival==1, 2,1)
+    
 }
 
 
-plot(dfd$Minutes, col=ifelse(dfd$start==1,2,1), pch=ifelse(dfd$start==1, 19, 3))
 
 
 
 
-plot(a$Minutes, col=a$VehicleID)
-plot(df$Minutes, col=df$jumppred_a+1, pch=ifelse(df$jumppred_a==1,1,21))
-plot(df$Minutes, col=df$arrival+1, pch=ifelse(df$arrival==1,19,21))
-plot(df$Minutes, col=ifelse(df$arrivalFinal==1,2,1), pch=ifelse(df$arrivalFinal==1, 19, 3))
-with(df[df$VehicleID==7215,], plot(Minutes, col=arrival+1, pch=ifelse(arrival==1,19,21)))
 
-cbind(df$difftime, df$diffpred)
+
+
