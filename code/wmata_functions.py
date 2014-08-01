@@ -6,6 +6,13 @@ Created on Sun Mar 09 22:56:20 2014
 """
 
 ###############################
+## initializing file path
+###############################
+import os
+os.chdir('/Users/ajb/Documents/github/nextbus/')
+
+
+###############################
 ## parses JSON bus prediction times 
 ###############################
 import json
@@ -28,7 +35,7 @@ def extractPred(buspred):
  
  
 if(1==0):
-    runfile('C:/Users/ANDREW/Dropbox/wmata/python-wmata.py')
+    runfile('python-wmata.py')
     api = Wmata('x42rp9qg6jjjydn2u8ng8stx')
     stopid = '1003043'
     stopid = '18383'
@@ -79,10 +86,10 @@ def write2text(filename, freq=10, mins=10, stopid='1003043'):
         outcsv.close()
 
 if(1==0):
-    runfile('C:/Users/ANDREW/Dropbox/wmata/python-wmata.py')
+    runfile('python-wmata.py')
     api = Wmata('x42rp9qg6jjjydn2u8ng8stx')
     stopid = '1003043'
     buspred=api.bus_prediction(stopid)
-    write2text('C:/Users/ANDREW/Dropbox/wmata/bus64_test.txt', freq=1, mins=.5)
+    write2text('data/bus64_test.txt', freq=1, mins=.5)
     
     

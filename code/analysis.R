@@ -1,7 +1,7 @@
 rm(list=ls())
-source('C:/Users/ANDREW/Documents/github/nextbus/code/idBuses.R')
+source('/Users/ajb/Documents/github/nextbus/code/idBuses.R')
 
-dfb <- read.delim('C:/Users/ANDREW/Documents/github/nextbus/data/bus64_15mar2014_9am_marathon.txt', sep='|', header=T, stringsAsFactors=F)
+dfb <- read.delim('/Users/ajb/Documents/github/nextbus/data/bus64_15mar2014_9am_marathon.txt', sep='|', header=T, stringsAsFactors=F)
 dfb$time <- as.POSIXct(dfb$time, origin='EST')
 
 ## Finding Arrivals, Departures and trip
