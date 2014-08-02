@@ -21,7 +21,7 @@ import time
 import datetime
 def extractPred(buspred):
     now = datetime.datetime.now()
-    preds = size(buspred.items()[1][1])
+    preds = len(buspred.items()[1][1])
     v=[]
     if(preds>0):
         for b in range(2): 
@@ -30,7 +30,8 @@ def extractPred(buspred):
             v3=buspred['Predictions'][b]['VehicleID']
             v4=buspred['Predictions'][b]['DirectionText']
             v5=buspred['Predictions'][b]['RouteID']
-            v.insert(b, [v1,v2,v3,v4,v5])
+            v6=buspred['Predictions'][b]['TripID']
+            v.insert(b, [v1,v2,v3,v4,v5,v6])
     return v
  
  
@@ -56,7 +57,7 @@ if(1==0):
     a['StopName']
     a['Predictions'][1]['Minutes']
     a['Predictions'][1]['Minutes']
-     
+    a['Predictions'][1]['TripID']
 
 import csv
 import datetime
@@ -64,7 +65,7 @@ import time
 def write2text(filename, freq=10, mins=10, stopid='1003043'):
     with open(filename, 'wb') as outcsv:   
         writer = csv.writer(outcsv, delimiter='|', lineterminator='\n') 
-        writer.writerow(['time', 'Minutes', 'VehicleID', 'DirectionText', 'RouteID'])
+        writer.writerow(['time', 'Minutes', 'VehicleID', 'DirectionText', 'RouteID', 'TripID'])
         stime = datetime.datetime.now()
         while datetime.datetime.now() < stime + datetime.timedelta(minutes=mins):
             try:
@@ -73,13 +74,15 @@ def write2text(filename, freq=10, mins=10, stopid='1003043'):
                 tmp = extractPred(buspred)   
                 NumOfLists = sum(isinstance(i, list) for i in tmp)
                 print buspred
+                print('numOfLists', NumOfLists)
                 if(NumOfLists>1):
                     for i in tmp:
-                        writer.writerow([i[0], i[1], i[2], i[3], i[4]])
+                        writer.writerow([i[0], i[1], i[2], i[3], i[4], i[5]])
+                        print([i[0], i[1], i[2], i[3], i[4], i[5]])
                 elif(len(tmp)==5): 
-                    writer.writerow([tmp[0], tmp[1], tmp[2], tmp[3], tmp[4]])
+                    writer.writerow([tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]])
                 else:
-                    writer.writerow([datetime.datetime.now(), 'NA', 'NA', 'NA', 'NA'])
+                    writer.writerow([datetime.datetime.now(), 'NA', 'NA', 'NA', 'NA', 'NA', 'NA'])
             except:
                 print [datetime.datetime.now(), 'some error...']
                 pass

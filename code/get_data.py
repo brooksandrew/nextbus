@@ -6,16 +6,11 @@ This temporary script file is located here:
 C:\Users\ANDREW\.spyder2\.temp.py
 """
 
-
-
-
 ###############################
 ## initializing file path
 ###############################
 import os
 os.chdir('/Users/ajb/Documents/github/nextbus/')
-
-
 
 ##################################
 ## FOR REAL ######################
