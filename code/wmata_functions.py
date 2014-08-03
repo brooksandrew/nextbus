@@ -19,12 +19,13 @@ import json
 import datetime
 import time
 import datetime
+
 def extractPred(buspred):
     now = datetime.datetime.now()
     preds = len(buspred.items()[1][1])
     v=[]
     if(preds>0):
-        for b in range(2): 
+        for b in range(0, preds): 
             v1=now
             v2=buspred['Predictions'][b]['Minutes']
             v3=buspred['Predictions'][b]['VehicleID']
@@ -34,7 +35,7 @@ def extractPred(buspred):
             v.insert(b, [v1,v2,v3,v4,v5,v6])
     return v
  
- 
+ ## Sanity Checks / Testing
 if(1==0):
     runfile('python-wmata.py')
     api = Wmata('x42rp9qg6jjjydn2u8ng8stx')
@@ -87,6 +88,7 @@ def write2text(filename, freq=10, mins=10, stopid='1003043'):
                 print [datetime.datetime.now(), 'some error...']
                 pass
         outcsv.close()
+
 
 if(1==0):
     runfile('python-wmata.py')

@@ -1,17 +1,18 @@
 rm(list=ls())
 source('/Users/ajb/Documents/github/nextbus/code/idBuses.R')
 
-dfb <- read.delim('/Users/ajb/Documents/github/nextbus/data/bus64_15mar2014_9am_marathon.txt', sep='|', header=T, stringsAsFactors=F)
-dfb$time <- as.POSIXct(dfb$time, origin='EST')
+df <- read.delim('/Users/ajb/Documents/github/nextbus/data/bus64_1Aug2014.txt', sep='|', header=T, stringsAsFactors=F)
+df$time <- as.POSIXct(df$time, origin='EST')
 
 ## Finding Arrivals, Departures and trip
-df <- idBuses(dfb)
+#df <- idBuses(dfb)
 
 ## plotting to validate 
 plot(df$predtime, col=df$VehicleID)
 plot(df$predtime, col=df$tripID)
 plot(df$Minutes, col=df$VehicleID, pch=ifelse(df$arrival==1 | df$departure==1, 19,3))
 plot(df$Minutes, col=df$tripID, pch=ifelse(df$arrival==1 | df$departure==1, 19,3))
+plot(df$time, df$Minutes)
 
 ## clean bus data
 dfc <- cleanBusData(df, minpredcount=10)
