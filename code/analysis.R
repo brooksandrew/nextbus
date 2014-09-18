@@ -135,6 +135,8 @@ ggsave(filename="/Users/ajb/Documents/github/simpleblog/assets/png/ggstddev.png"
 ###################################################
 ## comparing prediction errors during rush hours
 ###################################################
+require('scales')
+require('lubridate')
 
 military2std <- function(x) {
   ret <- rep(NA, length(x))
@@ -145,36 +147,43 @@ military2std <- function(x) {
   return(ret)
 }
 
-require('lubridate')
 df$day <- weekdays(df$time)
 df$weekday <- ifelse(df$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'), 1, 0)
 df$hour <- hour(df$time)
-esth5 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==5 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
-esth10 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==10 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
-esth15 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==15 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
-esth20 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==20 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
-esth25 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==25 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
-esth30 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==30 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
 
-plot(esth15$hour, esth15$err.50., col='white')
-text(esth15$hour, esth15$err.50., labels=military2std(esth15$hour))
-for(i in seq(5,30,5)) {
-  points( get(paste('esth', i, sep=''))[, 'hour'], get(paste('esth', i, sep=''))[, 'err.50.'], type='l', col=i)                        
-}
+agg <- with(df[df$weekday==1,], aggregate(err, by=list(hour, Minutes), median))
 
-
-for(i in 1:60) {
-  aggregate(err~hour, df[df$Minutes==i & df$hour<=23 & df$hour>=5 & df$weekday==1,], median)
-}
-
-
-agg <- aggregate(df$err, by=list(df$hour, df$Minutes), median)
 names(agg) <- c('hour', 'Minutes', 'err')
-agg2 <- reshape
+agg2 <- reshape(agg[agg$Minutes<=60,], timevar='Minutes', idvar='hour', direction='wide')
+agg2 <- agg2[agg2$hour>=5,]
+
+colfunc <- colorRampPalette(c('pink', 'firebrick'))
+cols <- colfunc(6)
+cols <- c('firebrick', 'forestgreen', 'darkorchid', 'dodgerblue')
+
+agg2$err.5.9 <- rowMeans(agg2[,paste('err.', 5:9, sep='')])
+agg2$err.10.14 <- rowMeans(agg2[,paste('err.', 10:14, sep='')])
+agg2$err.15.19 <- rowMeans(agg2[,paste('err.', 15:19, sep='')])
+
+plt3 <- ggplot(agg2, aes(x=hour)) +
+  geom_line(aes(y=err.5.9, color=cols[1]), lwd=1.5) +
+  geom_line(aes(y=err.10.14, color=cols[2]), lwd=1.5) +
+  geom_text(aes(y=err.10.14+.1, label=military2std(hour)), size=4) +
+  scale_x_continuous(breaks=seq(min(agg2$hour), max(agg2$hour), 2), labels=military2std(seq(min(agg2$hour), max(agg2$hour), 2))) +
+  ylab('Average prediction error (minutes)') + xlab('Time of prediction') + 
+  scale_colour_manual(values=cols[1:2], labels=c('average error when prediction is 5-9 minutes','average error when prediction is 10-14 minutes')) + 
+  theme(legend.title=element_blank()) +
+  theme(legend.position=c(.5,.1)) +
+  theme(legend.text=element_text(size=12)) + 
+  theme(legend.background = element_rect(fill=alpha('white', 0.5)))
+  
+ggsave(filename="/Users/ajb/Documents/github/simpleblog/assets/png/gghourmedian.png", plot=plt3, width=5, height=5, dpi=200, scale=1.3) 
 
 
 
-plt3 <- ggplot()
+## stacked gg bar plot
+ggplot(agg[agg$hour>=5 & agg$Minutes %in% seq(5,30,1),], aes(hour, y=err, fill=Minutes)) + geom_bar(stat='identity')
+
 
 
 
