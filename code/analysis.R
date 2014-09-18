@@ -132,6 +132,53 @@ plt2 <- ggplot(data=estvar[estvar$Minutes<=60,], aes(x=Minutes,y=err, label=Minu
 ggsave(filename="/Users/ajb/Documents/github/simpleblog/assets/png/ggstddev.png", plot=plt2, width=5, height=5, dpi=200) 
 
 
+###################################################
+## comparing prediction errors during rush hours
+###################################################
+
+military2std <- function(x) {
+  ret <- rep(NA, length(x))
+  ret[x<=11 & x>=1] <- paste(x[x<=11 & x>=1], 'am', sep='')
+  ret[x<=23 & x>=13] <- paste(x[x<=23 & x>=13]-12, 'pm', sep='')
+  ret[x==12] <- '12pm'
+  ret[x==0] <- '12am'
+  return(ret)
+}
+
+require('lubridate')
+df$day <- weekdays(df$time)
+df$weekday <- ifelse(df$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'), 1, 0)
+df$hour <- hour(df$time)
+esth5 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==5 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
+esth10 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==10 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
+esth15 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==15 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
+esth20 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==20 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
+esth25 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==25 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
+esth30 <- data.frame(as.matrix(aggregate(err~hour, df[df$Minutes==30 & df$hour<=23 & df$hour>=5 & df$weekday==1,], function(x) quantile(x, seq(0,1,.05)))))
+
+plot(esth15$hour, esth15$err.50., col='white')
+text(esth15$hour, esth15$err.50., labels=military2std(esth15$hour))
+for(i in seq(5,30,5)) {
+  points( get(paste('esth', i, sep=''))[, 'hour'], get(paste('esth', i, sep=''))[, 'err.50.'], type='l', col=i)                        
+}
+
+
+for(i in 1:60) {
+  aggregate(err~hour, df[df$Minutes==i & df$hour<=23 & df$hour>=5 & df$weekday==1,], median)
+}
+
+
+agg <- aggregate(df$err, by=list(df$hour, df$Minutes), median)
+names(agg) <- c('hour', 'Minutes', 'err')
+agg2 <- reshape
+
+
+
+plt3 <- ggplot()
+
+
+
+
 ## outputting data to JSON... again
 require('RJSONIO')
 a<-toJSON(df)
