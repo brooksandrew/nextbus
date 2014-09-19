@@ -37,7 +37,7 @@ def extractPred(buspred):
  
  ## Sanity Checks / Testing
 if(1==0):
-    runfile('python-wmata.py')
+    runfile('code/python-wmata.py')
     api = Wmata('x42rp9qg6jjjydn2u8ng8stx')
     stopid = '1003043'
     stopid = '18383'
