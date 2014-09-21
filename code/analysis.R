@@ -104,7 +104,7 @@ plt1 <- plt +
   geom_ribbon(aes(ymin=est.75.-Minutes,  ymax=est.85.-Minutes), fill=cols[2]) +
   geom_ribbon(aes(ymin=est.85.-Minutes,  ymax=est.95.-Minutes), fill=cols[3]) +
   geom_line(aes(y=est.50.-Minutes), col = "black", lwd = 1) +
-  geom_line(aes(y=0), col = "black", lwd=0.5, linetype='dashed') +
+  geom_line(aes(y=0), col="black", lwd=0.5, linetype='dashed') +
   xlab("Prediction (minutes)") + ylab("Prediction error (minutes)") +
   scale_y_continuous(breaks=seq(floor(min(estq60$est.10.-estq60$Minutes)), ceiling(max(estq60$est.95.-estq60$Minutes)), 1)) + 
   scale_x_continuous(breaks=seq(0, 60, 10)) +
@@ -114,7 +114,8 @@ plt1 <- plt +
   annotate("text", label="50% confidence interval", x=47-1.5, y=estq60$est.65.[47]-estq60$Minutes[47], size=2.5, hjust=1) +
   annotate("text", label="70% confidence interval", x=53-1.5, y=estq60$est.80.[53]-estq60$Minutes[53], size=2.5, hjust=1) +
   annotate("text", label="90% confidence interval", x=58-1.5, y=estq60$est.90.[58]-estq60$Minutes[58], size=2.5, hjust=1) +
-  annotate("text", label="Median", x=12+1, y=estq60$est.50.[12]-estq60$Minutes[12], size=3, hjust=0, fontface="bold")
+  annotate("text", label="Median", x=12+1, y=estq60$est.50.[12]-estq60$Minutes[12], size=3, hjust=0, fontface="bold") +
+  annotate("text", 30, 0.3, label = "on-time arrival", size=2.5)
 
 plot(plt1)
 ggsave(filename="plots/ggconf.png", plot=plt1)
@@ -152,7 +153,6 @@ df$weekday <- ifelse(df$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday',
 df$hour <- hour(df$time)
 
 agg <- with(df[df$weekday==1,], aggregate(err, by=list(hour, Minutes), median))
-
 names(agg) <- c('hour', 'Minutes', 'err')
 agg2 <- reshape(agg[agg$Minutes<=60,], timevar='Minutes', idvar='hour', direction='wide')
 agg2 <- agg2[agg2$hour>=5,]
@@ -175,24 +175,46 @@ plt3 <- ggplot(agg2, aes(x=hour)) +
   theme(legend.title=element_blank()) +
   theme(legend.position=c(.5,.1)) +
   theme(legend.text=element_text(size=12)) + 
-  theme(legend.background = element_rect(fill=alpha('white', 0.5)))
-  
+  theme(legend.background = element_rect(fill=alpha('white', 0.5))) + 
+
+plot(plt3)
 ggsave(filename="/Users/ajb/Documents/github/simpleblog/assets/png/gghourmedian.png", plot=plt3, width=5, height=5, dpi=200, scale=1.3) 
 
+#################################
+## slope ########################
+#################################
+df$slope[2:nrow(df)] <- diff(df$Minutes)/as.numeric(diff(df$time))
 
 
 ## stacked gg bar plot
 ggplot(agg[agg$hour>=5 & agg$Minutes %in% seq(5,30,1),], aes(hour, y=err, fill=Minutes)) + geom_bar(stat='identity')
 
+agg <- with(df[df$weekday==1,], aggregate(slope, by=list(hour, Minutes), mean))
+
+## calculate Mean avg prediction error
+mape <- aggregate(err~Minutes, df, function(x) mean(abs(x)))
+mape60 <- mape[mape$Minutes<=60,]
+barplot(mape60[,2], names=mape60[,1], las=2, xlab='Prediction (minutes)', ylab='Average prediction error (minutes)')
+
+plt4 <- ggplot(data=mape60, aes(x=Minutes, y=err)) + geom_bar(stat='identity', fill='darkblue') + 
+  xlab('Prediction (minutes)') + ylab('Average absolute prediction error (minutes)') +
+  scale_x_continuous(breaks=seq(floor(min(mape60$Minutes)), ceiling(max(mape60$Minutes)), 2))
+  
+ggsave(filename="/Users/ajb/Documents/github/simpleblog/assets/png/ggmapebar.png", plot=plt4, width=5, height=5, dpi=200, scale=1.3) 
+
+### testing nextbus predictions
+
+nrow(df[df$Minutes<=5 & abs(df$err)<1,])/nrow(df[df$Minutes<=5,])
+nrow(df[df$Minutes<=10 & abs(df$err)<2,])/nrow(df[df$Minutes<=10,])
 
 
-
-
+dfopt <- df[,c('time', 'Minutes', 'est')]
 ## outputting data to JSON... again
 require('RJSONIO')
 a<-toJSON(df)
 write.table(a, file='/Users/ajb/Documents/github/nextbus/data/cleanTrips.json')
 write.table(df, file='/Users/ajb/Documents/github/nextbus/data/cleanTrips.csv', row.names=F, sep=',')
+write.table(dfopt, file='/Users/ajb/Documents/github/nextbus/data/cleanTripsOpt.csv', row.names=F, sep=',')
 write.table(df[df$timediffSample<=1, c('err', 'Minutes', 'time')], file='/Users/ajb/Documents/github/nextbus/data/cleanTrips_d3scatter.csv', row.names=F, sep=',')
 write.table(df[df$time<quantile(df$time, 0.1),], file='/Users/ajb/Documents/github/nextbus/data/cleanTrips_small.csv', row.names=F, sep=',')
 
